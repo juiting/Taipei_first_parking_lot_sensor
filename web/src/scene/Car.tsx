@@ -5,10 +5,11 @@ interface Props {
   width: number
   color: string
   bus?: boolean
+  glow?: boolean // 剛停入高亮：車身微發光
 }
 
 // 低面數車輛：車身 + 車頂 + 四輪。local +x 為車頭方向。
-export const Car = memo(function Car({ length, width, color, bus }: Props) {
+export const Car = memo(function Car({ length, width, color, bus, glow }: Props) {
   const h = bus ? 1.6 : 0.7
   const cabinH = bus ? 0.6 : 0.5
   const bodyL = length * 0.94
@@ -22,12 +23,14 @@ export const Car = memo(function Car({ length, width, color, bus }: Props) {
       {/* 車身 */}
       <mesh position={[0, wy + h / 2, 0]} castShadow>
         <boxGeometry args={[bodyL, h, bodyW]} />
-        <meshStandardMaterial color={color} metalness={0.3} roughness={0.5} />
+        <meshStandardMaterial color={color} metalness={0.3} roughness={0.5}
+          emissive={glow ? color : '#000000'} emissiveIntensity={glow ? 0.45 : 0} />
       </mesh>
       {/* 車頂 / 車廂 */}
       <mesh position={[bus ? 0 : -bodyL * 0.05, wy + h + cabinH / 2, 0]}>
         <boxGeometry args={[bodyL * (bus ? 0.9 : 0.5), cabinH, bodyW * 0.86]} />
-        <meshStandardMaterial color={color} metalness={0.2} roughness={0.6} />
+        <meshStandardMaterial color={color} metalness={0.2} roughness={0.6}
+          emissive={glow ? color : '#000000'} emissiveIntensity={glow ? 0.45 : 0} />
       </mesh>
       {/* 四輪 */}
       {[

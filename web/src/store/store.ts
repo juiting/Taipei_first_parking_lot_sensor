@@ -10,6 +10,7 @@ interface State {
   selected: string | null
   recentChanges: Change[]
   features: SiteFeatures | null
+  nowTick: number
   loadLayout: () => Promise<void>
   setSelected: (name: string | null) => void
   _applySnapshot: (spaces: Space[], summary: Summary | null, fetchedAt: string | null) => void
@@ -26,6 +27,7 @@ export const useStore = create<State>((set) => ({
   selected: null,
   recentChanges: [],
   features: null,
+  nowTick: Date.now(),
 
   loadLayout: async () => {
     try {
@@ -71,6 +73,9 @@ export const useStore = create<State>((set) => ({
 
   _setConnected: (v) => set({ connected: v }),
 }))
+
+// 每 15 秒更新時鐘，讓「剛停入(<5分)」的紅色車身逾時自動回灰
+setInterval(() => useStore.setState({ nowTick: Date.now() }), 15000)
 
 // ---- WebSocket 自動重連 ----
 let ws: WebSocket | null = null

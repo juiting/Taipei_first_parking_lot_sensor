@@ -4,7 +4,8 @@ import { Text } from '@react-three/drei'
 import { CanvasTexture } from 'three'
 import type { Mesh, MeshStandardMaterial } from 'three'
 import type { Space } from '../types'
-import { colorFor } from './colors'
+import { colorFor, isNewArrival, NEW_ARRIVAL_CAR_COLOR, CAR_COLOR, BUS_COLOR } from './colors'
+import { useStore } from '../store/store'
 import { Car } from './Car'
 
 const DEG = Math.PI / 180
@@ -40,9 +41,12 @@ export const ParkingSpace = memo(function ParkingSpace({
 }: Props) {
   const padMat = useRef<MeshStandardMaterial>(null)
   const padRef = useRef<Mesh>(null)
+  const nowTick = useStore((s) => s.nowTick)
   const color = colorFor(space.status, space.offline)
   const occupied = space.status === 'Occupied'
   const isBus = space.type === 'bus'
+  // 剛停入（5 分鐘內變為在席）→ 整車紅色，逾時隨 nowTick 自動回灰
+  const newArrival = occupied && isNewArrival(space.event_time, nowTick)
 
   // 離線：閃爍；被選取：脈動抬升
   useFrame(({ clock }) => {
@@ -106,9 +110,15 @@ export const ParkingSpace = memo(function ParkingSpace({
         </mesh>
       )}
 
-      {/* 有車則顯示車輛 */}
+      {/* 有車則顯示車輛（剛停入 5 分鐘內整車紅色） */}
       {occupied && (
-        <Car length={space.d * 0.9} width={space.w * 0.88} color={isBus ? '#b8c0cc' : '#aeb6c2'} bus={isBus} />
+        <Car
+          length={space.d * 0.9}
+          width={space.w * 0.88}
+          color={newArrival ? NEW_ARRIVAL_CAR_COLOR : isBus ? BUS_COLOR : CAR_COLOR}
+          bus={isBus}
+          glow={newArrival}
+        />
       )}
 
       {/* 編號（縮放近或選取時顯示） */}
