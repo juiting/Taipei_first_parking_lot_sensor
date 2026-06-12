@@ -1,10 +1,15 @@
 """集中設定：一律由環境變數 / .env 載入，禁止硬寫帳密。"""
 import os
+import sys
 from pathlib import Path
 
 from dotenv import load_dotenv
 
-PROJECT_ROOT = Path(__file__).resolve().parent.parent
+# PyInstaller 打包（frozen）時，.env / data / logs 一律放在 exe 同層，方便現場修改
+if getattr(sys, "frozen", False):
+    PROJECT_ROOT = Path(sys.executable).resolve().parent
+else:
+    PROJECT_ROOT = Path(__file__).resolve().parent.parent
 load_dotenv(PROJECT_ROOT / ".env")
 
 

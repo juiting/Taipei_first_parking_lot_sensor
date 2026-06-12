@@ -18,5 +18,10 @@ data/*.sqlite-shm
 web/node_modules/
 web/dist/
 
+# runtime logs / build
+logs/
+build/
+dist/
+
 # misc
 .DS_Store

@@ -7,6 +7,7 @@ from __future__ import annotations
 import asyncio
 import json
 import logging
+import sys
 from contextlib import asynccontextmanager
 from pathlib import Path
 
@@ -23,7 +24,11 @@ logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(mess
 log = logging.getLogger("geomag.api")
 
 ROOT = Path(__file__).resolve().parent.parent
-WEB_DIST = ROOT / "web" / "dist"
+# PyInstaller 打包時前端由 add-data 塞進 bundle（web_dist），開發時用 web/dist
+if getattr(sys, "frozen", False):
+    WEB_DIST = Path(getattr(sys, "_MEIPASS", ROOT)) / "web_dist"
+else:
+    WEB_DIST = ROOT / "web" / "dist"
 
 
 def load_layout() -> dict:

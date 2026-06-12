@@ -86,6 +86,20 @@ cd web && npm run dev
 | GET | `/api/spaces/{name}/history` | 單格狀態變化歷史 |
 | WS | `/ws` | 連上即收全量 snapshot，之後推播狀態變更 diff |
 
+## 現場部署（Windows 11）
+
+現場管理員電腦採**單機自包**：collector + API + 前端全部跑在同一台 Windows PC，
+桌面捷徑開瀏覽器即時查看（`http://127.0.0.1:8610`，僅本機服務）。
+
+- **產包**：推 tag（`git tag v0.x.x && git push origin v0.x.x`）→ GitHub Actions 於
+  Windows runner 以 PyInstaller 建置，zip 自動掛上 GitHub Release（含啟動煙霧測試）。
+- **現場安裝**：下載 Release zip → 解壓 → 雙擊 `install.bat`（首次會詢問 Carin 連線資訊
+  寫入本機 `.env`），自動註冊開機啟動與異常重啟、建立桌面捷徑。詳見
+  [deploy/windows/安裝說明.md](deploy/windows/安裝說明.md)。
+- **更新**：現場雙擊 `update.bat` 自動抓最新 Release 覆蓋（保留 `.env`、`data/`、`logs/`）。
+- 打包入口為 [deploy/windows/launcher.py](deploy/windows/launcher.py)；frozen 模式下
+  `.env`、`data/`、`logs/` 都在 exe 同層，方便現場調整。
+
 ## 資料源備註
 
 Carin 服務（ASP.NET Core）無對外查詢 API，目前以登入 + 解析主頁 HTML 表格取得 324 筆
