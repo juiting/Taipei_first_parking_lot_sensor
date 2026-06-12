@@ -1,8 +1,45 @@
 import { memo } from 'react'
 import { Text } from '@react-three/drei'
+import { Shape, ShapeGeometry } from 'three'
 import type { SiteFeatures as Features } from '../types'
 
 const DEG = Math.PI / 180
+
+// 車道方向箭頭（指向 local +x，地面標線樣式）
+const arrowShape = new Shape()
+arrowShape.moveTo(-1.6, -0.28)
+arrowShape.lineTo(0.3, -0.28)
+arrowShape.lineTo(0.3, -0.85)
+arrowShape.lineTo(1.7, 0)
+arrowShape.lineTo(0.3, 0.85)
+arrowShape.lineTo(0.3, 0.28)
+arrowShape.lineTo(-1.6, 0.28)
+arrowShape.closePath()
+const arrowGeom = new ShapeGeometry(arrowShape)
+
+// lane = [x1, y1, x2, y2, dir, two_way?]：沿長軸每 ~18m 放一個箭頭
+function laneArrows(r: number[], cx: number, cy: number) {
+  const [x1, y1, x2, y2, dir = -1, twoWay] = r
+  if (dir < 0 || dir === undefined) return []
+  const horiz = (x2 - x1) >= (y2 - y1)
+  const len = horiz ? x2 - x1 : y2 - y1
+  const w = horiz ? y2 - y1 : x2 - x1
+  const n = Math.max(1, Math.floor(len / 18))
+  const out: { x: number; z: number; rot: number }[] = []
+  for (let i = 0; i < n; i++) {
+    const t = (i + 0.5) / n
+    const px = horiz ? x1 + t * len : (x1 + x2) / 2
+    const py = horiz ? (y1 + y2) / 2 : y1 + t * len
+    if (twoWay) {
+      const off = w * 0.22
+      out.push({ x: horiz ? px : px - off, z: horiz ? py - off : py, rot: dir })
+      out.push({ x: horiz ? px : px + off, z: horiz ? py + off : py, rot: (dir + 180) % 360 })
+    } else {
+      out.push({ x: px, z: py, rot: dir })
+    }
+  }
+  return out.map((a) => ({ ...a, x: a.x - cx, z: a.z - cy }))
+}
 
 interface Props {
   features: Features
@@ -78,6 +115,20 @@ export const SiteFeatures = memo(function SiteFeatures({ features: f, cx, cy }: 
 
       {/* 周邊道路 */}
       {f.roads?.map((r, i) => <Rect key={`rd${i}`} r={r} cx={cx} cy={cy} color="#151a21" y={0.004} />)}
+
+      {/* 場內車道（含行車方向箭頭） */}
+      {f.lanes?.map((r, i) => (
+        <group key={`ln${i}`}>
+          <Rect r={r} cx={cx} cy={cy} color="#313a47" y={0.008} />
+          {laneArrows(r, cx, cy).map((a, j) => (
+            <group key={j} position={[a.x, 0.03, a.z]} rotation={[0, -a.rot * DEG, 0]}>
+              <mesh geometry={arrowGeom} rotation={[-Math.PI / 2, 0, 0]}>
+                <meshBasicMaterial color="#dde3ec" transparent opacity={0.8} depthWrite={false} />
+              </mesh>
+            </group>
+          ))}
+        </group>
+      ))}
 
       {/* 第一綠地（草皮 + 四邊綠籬） */}
       {f.grass?.map((r, i) => {

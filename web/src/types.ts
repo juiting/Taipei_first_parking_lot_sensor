@@ -34,7 +34,8 @@ export interface Change {
   event_time?: string | null
 }
 
-// 場域環境特徵（rect = [x1, y1, x2, y2]，building 多帶高度，gate = [x, y, rot]）
+// 場域環境特徵（rect = [x1, y1, x2, y2]，building 多帶高度，gate = [x, y, rot]，
+// lane = [x1, y1, x2, y2, dir(行車方向角度), two_way?]）
 export interface SiteFeatures {
   lot?: number[]
   grass?: number[][]
@@ -42,6 +43,7 @@ export interface SiteFeatures {
   roads?: number[][]
   buildings?: number[][]
   walls?: number[][]
+  lanes?: number[][]
   trees?: number[][]
   street_trees?: number[][]
   gates?: number[][]

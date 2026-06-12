@@ -139,6 +139,8 @@ def render_preview(layout: dict) -> str:
         frect(feats["lot"], "#1c2430", 1.0)
     for r in feats.get("roads", []):
         frect(r, "#0b0f16", 1.0)
+    for r in feats.get("lanes", []):
+        frect(r, "#39424f", 0.65)
     for r in feats.get("grass", []):
         frect(r, "#2f6b3d", 0.8)
     for r in feats.get("moto", []):
