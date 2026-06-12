@@ -33,6 +33,18 @@ jobs:
       - name: Install Python deps
         run: pip install -r requirements.txt pyinstaller
 
+      - name: Lint PowerShell scripts
+        shell: pwsh
+        run: |
+          $bad = @()
+          Get-ChildItem deploy/windows/scripts/*.ps1 | ForEach-Object {
+            $tokens = $null; $errs = $null
+            [System.Management.Automation.Language.Parser]::ParseFile($_.FullName, [ref]$tokens, [ref]$errs) | Out-Null
+            if ($errs) { $bad += "$($_.Name): $($errs[0].Message)" }
+          }
+          if ($bad) { $bad | ForEach-Object { Write-Host $_ -ForegroundColor Red }; exit 1 }
+          Write-Host 'PowerShell scripts OK'
+
       - name: PyInstaller build
         run: pyinstaller deploy/windows/geomag.spec --noconfirm
 

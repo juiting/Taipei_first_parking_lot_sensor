@@ -13,12 +13,48 @@ if (-not (Test-Path $Exe)) {
     exit 1
 }
 
-# 1) 首次安裝：互動建立 .env（連線資訊不隨安裝包散布）
+# 1) 建立 / 重設 .env（IP 與埠號分開輸入，連線資訊不隨安裝包散布）
 $EnvPath = Join-Path $AppDir '.env'
-if (-not (Test-Path $EnvPath)) {
+$needConfig = $true
+if (Test-Path $EnvPath) {
+    $re = Read-Host '偵測到既有設定（.env）。要重新設定連線資訊嗎？（y=重新設定，直接按 Enter=沿用）'
+    if ($re -notmatch '^[Yy]') { $needConfig = $false; Write-Host '沿用既有設定。' }
+}
+if ($needConfig) {
     Write-Host ''
-    Write-Host '首次安裝，請輸入地磁系統（Carin）連線資訊（請向系統負責人索取）：'
-    $base = Read-Host '  Carin 網址（例：http://主機IP:5501）'
+    Write-Host '請輸入地磁系統（Carin）連線資訊（請向系統負責人索取）：'
+    $base = $null
+    do {
+        # 主機 IP：容錯處理——貼了 http://、整段網址、或「IP:埠號」都能自動解析
+        $ipRaw = (Read-Host '  主機 IP（只需數字與點，例：192.168.0.50）').Trim()
+        $ipRaw = $ipRaw -replace '^https?://', '' -replace '/.*$', ''
+        $port = $null
+        if ($ipRaw -match '^(.+):(\d+)$') { $port = $Matches[2]; $ipRaw = $Matches[1] }
+
+        if ($ipRaw -notmatch '^\d{1,3}(\.\d{1,3}){3}$') {
+            Write-Host '  [X] IP 格式不正確，請只輸入數字與點（例：192.168.0.50）。' -ForegroundColor Yellow
+            continue
+        }
+        if (-not $port) {
+            $port = (Read-Host '  埠號 Port（純數字，例：8080）').Trim()
+        }
+        if ($port -notmatch '^\d{1,5}$') {
+            Write-Host '  [X] 埠號必須是 1～5 位數字，請從 IP 重新輸入。' -ForegroundColor Yellow
+            continue
+        }
+
+        $base = "http://${ipRaw}:${port}"
+        Write-Host "  測試連線 $base …" -NoNewline
+        try {
+            $null = Invoke-WebRequest "$base/Login" -UseBasicParsing -TimeoutSec 6
+            Write-Host ' [OK] 連線成功' -ForegroundColor Green
+        } catch {
+            Write-Host ' [X] 連不上' -ForegroundColor Yellow
+            $ans = Read-Host '  無法連到地磁主機，可能是 IP/埠號有誤或網路不通。r=重新輸入 / c=仍用此設定繼續'
+            if ($ans -notmatch '^[Cc]') { $base = $null }
+        }
+    } until ($base)
+
     $user = Read-Host '  帳號'
     $pass = Read-Host '  密碼'
     @(
@@ -32,8 +68,6 @@ if (-not (Test-Path $EnvPath)) {
         'API_PORT=8610'
     ) | Set-Content -Path $EnvPath -Encoding UTF8
     Write-Host '已建立 .env 設定檔。'
-} else {
-    Write-Host '.env 已存在，沿用既有設定。'
 }
 
 # 2) 註冊「登入自動啟動」工作排程，異常時每分鐘自動重啟
