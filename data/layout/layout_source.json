@@ -1,0 +1,46 @@
+{
+  "meta": {
+    "site": "台北市第一停車場",
+    "units": "m",
+    "y_axis": "down",
+    "space_w": 2.5,
+    "space_d": 5.5,
+    "_draft_note": "v1 草稿座標：依平面圖照片判讀，編號完整(1-315 + 大客車1-4)、相對拓樸接近，但精確位置待使用者用高解析平面圖/CAD校正。各排定義集中於本檔，校正只需改 origin/heading/pitch。"
+  },
+  "rows": [
+    {"id": "west_strip", "comment": "最左側直排 1-36", "range": [1, 36], "origin": [3, 12], "heading": 90, "facing": 0, "zone": "A"},
+
+    {"id": "band6_top", "comment": "區⑥ 上排 37-58", "range": [37, 58], "origin": [10, 16], "heading": 0, "facing": 90, "zone": "A1"},
+    {"id": "band6_bot", "comment": "區⑥ 下排 80-59", "range": [80, 59], "origin": [10, 23], "heading": 0, "facing": 270, "zone": "A1"},
+
+    {"id": "band5_top", "comment": "區⑤ 上排 81-102", "range": [81, 102], "origin": [10, 37], "heading": 0, "facing": 90, "zone": "A2"},
+    {"id": "band5_bot", "comment": "區⑤ 下排 123-103", "range": [123, 103], "origin": [10, 44], "heading": 0, "facing": 270, "zone": "A2"},
+
+    {"id": "band4_top", "comment": "區④ 上排 124-145", "range": [124, 145], "origin": [10, 58], "heading": 0, "facing": 90, "zone": "A3"},
+    {"id": "band4_bot", "comment": "區④ 下排 166-146", "range": [166, 146], "origin": [10, 65], "heading": 0, "facing": 270, "zone": "A3"},
+
+    {"id": "top_strip", "comment": "上方橫排 175-167", "range": [175, 167], "origin": [64, 6], "heading": 0, "facing": 180, "zone": "A4"},
+
+    {"id": "band3_r1", "comment": "區③ 176-188", "range": [176, 188], "origin": [10, 79], "heading": 0, "facing": 90, "zone": "A0"},
+    {"id": "band3_r2", "comment": "區③ 200-189", "range": [200, 189], "origin": [10, 86], "heading": 0, "facing": 270, "zone": "A0"},
+    {"id": "band3_r3", "comment": "區③ 209-201", "range": [209, 201], "origin": [10, 93], "heading": 0, "facing": 90, "zone": "A0"},
+
+    {"id": "band2_r1", "comment": "區② 210-218", "range": [210, 218], "origin": [10, 100], "heading": 0, "facing": 270, "zone": "A5"},
+    {"id": "band2_r2", "comment": "區② 219-224", "range": [219, 224], "origin": [10, 107], "heading": 0, "facing": 90, "zone": "A5"},
+    {"id": "band2_r3", "comment": "區② 225-229", "range": [225, 229], "origin": [10, 116], "heading": 0, "facing": 90, "zone": "A6"},
+    {"id": "band2_r4", "comment": "區② 230-234", "range": [230, 234], "origin": [25, 116], "heading": 0, "facing": 90, "zone": "A6"},
+    {"id": "band2_r5", "comment": "區② 235-237", "range": [235, 237], "origin": [40, 116], "heading": 0, "facing": 90, "zone": "A6"},
+    {"id": "band2_r6", "comment": "區② 238-243", "range": [238, 243], "origin": [10, 123], "heading": 0, "facing": 270, "zone": "A5"},
+
+    {"id": "bus_row", "comment": "甲類大型車 大客車1-4", "list": [1, 2, 3, 4], "name_tpl": "大客車{n}", "origin": [10, 132], "heading": 0, "pitch": 6, "w": 4, "d": 12, "facing": 90, "type": "bus", "zone": "bus"},
+
+    {"id": "right_c1", "comment": "右側 244-253", "range": [244, 253], "origin": [72, 16], "heading": 90, "facing": 180, "zone": "A7"},
+    {"id": "right_c2", "comment": "右側 254-267", "range": [254, 267], "origin": [79, 16], "heading": 90, "facing": 0, "zone": "A0"},
+    {"id": "right_c3", "comment": "右側 充電格 268-277", "range": [268, 277], "origin": [86, 16], "heading": 90, "facing": 180, "zone": "A0"},
+    {"id": "right_c4", "comment": "右側 278-279", "range": [278, 279], "origin": [93, 16], "heading": 90, "facing": 0, "zone": "A0"},
+    {"id": "right_c5", "comment": "右側 280-293", "range": [280, 293], "origin": [93, 33], "heading": 90, "facing": 0, "zone": "A0"},
+    {"id": "right_c6", "comment": "右側 294", "list": [294], "origin": [86, 76], "heading": 90, "facing": 180, "zone": "A0"},
+    {"id": "right_c7", "comment": "右側 295-306", "range": [295, 306], "origin": [100, 16], "heading": 90, "facing": 180, "zone": "A7"},
+    {"id": "right_c8", "comment": "右側 307-315", "range": [307, 315], "origin": [107, 16], "heading": 90, "facing": 0, "zone": "A7"}
+  ]
+}

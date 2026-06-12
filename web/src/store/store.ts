@@ -1,0 +1,95 @@
+import { create } from 'zustand'
+import type { Space, Summary, Change } from '../types'
+
+interface State {
+  spaces: Space[]
+  byName: Record<string, Space>
+  summary: Summary | null
+  connected: boolean
+  fetchedAt: string | null
+  selected: string | null
+  recentChanges: Change[]
+  setSelected: (name: string | null) => void
+  _applySnapshot: (spaces: Space[], summary: Summary | null, fetchedAt: string | null) => void
+  _applyUpdate: (changes: Change[], summary: Summary | null, fetchedAt: string | null) => void
+  _setConnected: (v: boolean) => void
+}
+
+export const useStore = create<State>((set) => ({
+  spaces: [],
+  byName: {},
+  summary: null,
+  connected: false,
+  fetchedAt: null,
+  selected: null,
+  recentChanges: [],
+
+  setSelected: (name) => set({ selected: name }),
+
+  _applySnapshot: (spaces, summary, fetchedAt) =>
+    set(() => ({
+      spaces,
+      byName: Object.fromEntries(spaces.map((s) => [s.name, s])),
+      summary,
+      fetchedAt,
+    })),
+
+  _applyUpdate: (changes, summary, fetchedAt) =>
+    set((state) => {
+      if (!changes.length) {
+        return { summary: summary ?? state.summary, fetchedAt }
+      }
+      const byName = { ...state.byName }
+      for (const c of changes) {
+        const prev = byName[c.name]
+        if (prev) {
+          byName[c.name] = { ...prev, status: c.new_status, event_time: c.event_time ?? prev.event_time }
+        }
+      }
+      const recent = [...changes.map((c) => ({ ...c })), ...state.recentChanges].slice(0, 30)
+      return {
+        byName,
+        spaces: state.spaces.map((s) => byName[s.name] ?? s),
+        summary: summary ?? state.summary,
+        fetchedAt,
+        recentChanges: recent,
+      }
+    }),
+
+  _setConnected: (v) => set({ connected: v }),
+}))
+
+// ---- WebSocket 自動重連 ----
+let ws: WebSocket | null = null
+let retry = 0
+
+export function connectWS() {
+  const proto = location.protocol === 'https:' ? 'wss' : 'ws'
+  const url = `${proto}://${location.host}/ws`
+  ws = new WebSocket(url)
+
+  ws.onopen = () => {
+    retry = 0
+    useStore.getState()._setConnected(true)
+  }
+  ws.onclose = () => {
+    useStore.getState()._setConnected(false)
+    retry = Math.min(retry + 1, 10)
+    setTimeout(connectWS, 1000 * retry) // 線性退避，最多 10s
+  }
+  ws.onerror = () => ws?.close()
+  ws.onmessage = (ev) => {
+    const msg = JSON.parse(ev.data)
+    const st = useStore.getState()
+    if (msg.type === 'snapshot') {
+      st._applySnapshot(msg.spaces, msg.summary, msg.fetched_at)
+    } else if (msg.type === 'update' || msg.type === 'tick') {
+      st._applyUpdate(msg.changes ?? [], msg.summary, msg.fetched_at)
+    }
+  }
+  // 心跳，避免代理層斷線
+  const ping = setInterval(() => {
+    if (ws?.readyState === WebSocket.OPEN) ws.send('ping')
+    else clearInterval(ping)
+  }, 25000)
+}
