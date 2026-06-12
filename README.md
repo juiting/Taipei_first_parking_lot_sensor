@@ -51,16 +51,17 @@ npm run build          # 產出 web/dist，後端會自動掛載到 /
 ```
 
 ### 4. 啟動（單一服務同時提供 API + 前端）
+> Port 8610（8600 保留給戰情室 Kiosk，避免衝突）。可改 `.env` 的 `API_PORT`。
 ```bash
-.venv/bin/python -m uvicorn api.main:app --host 0.0.0.0 --port 8600
-# 瀏覽器開 http://localhost:8600
+.venv/bin/python -m uvicorn api.main:app --host 0.0.0.0 --port 8610
+# 瀏覽器開 http://localhost:8610
 ```
 
 ### 開發模式（前端熱更新）
 ```bash
 # 終端機 A：後端
-.venv/bin/python -m uvicorn api.main:app --port 8600
-# 終端機 B：前端（已設定代理 /api /ws → 8600）
+.venv/bin/python -m uvicorn api.main:app --port 8610
+# 終端機 B：前端（已設定代理 /api /ws → 8610）
 cd web && npm run dev
 ```
 

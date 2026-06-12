@@ -6,8 +6,8 @@ export default defineConfig({
   plugins: [react()],
   server: {
     proxy: {
-      '/api': { target: 'http://127.0.0.1:8600', changeOrigin: true },
-      '/ws': { target: 'ws://127.0.0.1:8600', ws: true },
+      '/api': { target: 'http://127.0.0.1:8610', changeOrigin: true },
+      '/ws': { target: 'ws://127.0.0.1:8610', ws: true },
     },
   },
   build: { outDir: 'dist' },
