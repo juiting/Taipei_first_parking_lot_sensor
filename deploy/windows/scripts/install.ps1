@@ -13,6 +13,12 @@ if (-not (Test-Path $Exe)) {
     exit 1
 }
 
+# 解除「網路下載封鎖」（Mark-of-the-Web）：
+# 從網路下載的 zip 解壓後所有檔案都帶封鎖標記，exe 經工作排程器啟動會被系統默默擋下
+Write-Host '解除檔案封鎖中…' -NoNewline
+Get-ChildItem -Path $AppDir -Recurse -File | Unblock-File -ErrorAction SilentlyContinue
+Write-Host ' 完成'
+
 # 1) 建立 / 重設 .env（IP 與埠號分開輸入，連線資訊不隨安裝包散布）
 $EnvPath = Join-Path $AppDir '.env'
 $needConfig = $true
@@ -95,23 +101,28 @@ Write-Host ''
 if ($ok) {
     Write-Host '服務啟動成功！' -ForegroundColor Green
 } else {
-    Write-Host '服務尚未回應；請稍後點桌面捷徑確認，或查看 logs\geomag.log（可能是連線資訊有誤）。' -ForegroundColor Yellow
+    Write-Host '服務尚未回應，自動診斷中…' -ForegroundColor Yellow
+    $proc = Get-Process GeomagMonitor -ErrorAction SilentlyContinue
+    if ($proc) {
+        Write-Host ("  程式有在執行（PID {0}），可能仍在啟動或連線資訊有誤；稍後點桌面捷徑重試。" -f $proc.Id)
+    } else {
+        $info = Get-ScheduledTaskInfo -TaskName $TaskName -ErrorAction SilentlyContinue
+        if ($info) { Write-Host ("  程式未啟動（工作排程結果代碼 0x{0:X}）。" -f $info.LastTaskResult) }
+        Write-Host '  可能是防毒軟體攔截：請將本資料夾加入防毒「信任／排除清單」後，重新執行 install.bat。' -ForegroundColor Yellow
+    }
+    $logFile = Join-Path $AppDir 'logs\geomag.log'
+    if (Test-Path $logFile) {
+        Write-Host '  --- 最近日誌 ---'
+        Get-Content $logFile -Tail 5 | ForEach-Object { Write-Host "  $_" }
+    }
 }
 
-# 4) 建立桌面捷徑
+# 4) 建立桌面捷徑（以預設瀏覽器分頁開啟；想全螢幕可在瀏覽器按 F11）
 $Desktop = [Environment]::GetFolderPath('Desktop')
 @('[InternetShortcut]', "URL=$Url") | Set-Content -Path (Join-Path $Desktop '第一停車場監控.url') -Encoding ASCII
-
-$edge = Join-Path ${env:ProgramFiles(x86)} 'Microsoft\Edge\Application\msedge.exe'
-if (-not (Test-Path $edge)) { $edge = Join-Path $env:ProgramFiles 'Microsoft\Edge\Application\msedge.exe' }
-if (Test-Path $edge) {
-    $ws = New-Object -ComObject WScript.Shell
-    $lnk = $ws.CreateShortcut((Join-Path $Desktop '第一停車場監控-全螢幕.lnk'))
-    $lnk.TargetPath = $edge
-    $lnk.Arguments = "--kiosk $Url --edge-kiosk-type=fullscreen"
-    $lnk.WorkingDirectory = $AppDir
-    $lnk.Save()
-}
-Write-Host '桌面捷徑已建立：「第一停車場監控」與「第一停車場監控-全螢幕」。'
+# 清除舊版的全螢幕捷徑
+Remove-Item (Join-Path $Desktop '第一停車場監控-全螢幕.lnk') -Force -ErrorAction SilentlyContinue
+Write-Host '桌面捷徑已建立：「第一停車場監控」（以瀏覽器分頁開啟）。'
 Write-Host ''
 Write-Host '安裝完成。日常使用：點桌面「第一停車場監控」即可。' -ForegroundColor Green
+if ($ok) { Start-Process $Url }  # 安裝成功直接開給管理員看
