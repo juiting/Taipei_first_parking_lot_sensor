@@ -5,42 +5,66 @@
     "y_axis": "down",
     "space_w": 2.5,
     "space_d": 5.5,
-    "_draft_note": "v1 草稿座標：依平面圖照片判讀，編號完整(1-315 + 大客車1-4)、相對拓樸接近，但精確位置待使用者用高解析平面圖/CAD校正。各排定義集中於本檔，校正只需改 origin/heading/pitch。"
+    "_note": "v2：依現場 3D 建模圖（2026-06-12 提供）校正排列與相對位置。原點=場區西北角，x 向東、y 向南，場區約 200x112m。307-308 圖面未標示，置於東側路邊待確認。微調個別排：改 origin/heading/pitch 後重跑 scripts/build_layout.py。"
   },
   "rows": [
-    {"id": "west_strip", "comment": "最左側直排 1-36", "range": [1, 36], "origin": [3, 12], "heading": 90, "facing": 0, "zone": "A"},
+    {"id": "west_1_29",  "comment": "西側直排北段 1-29（背西牆，朝東開口）", "range": [1, 29],  "origin": [3.2, 8],  "heading": 90, "facing": 180, "zone": "A"},
+    {"id": "west_30_36", "comment": "西側直排南段 30-36（圖面粉紅區）",     "range": [30, 36], "origin": [3.2, 81], "heading": 90, "facing": 180, "zone": "A"},
 
-    {"id": "band6_top", "comment": "區⑥ 上排 37-58", "range": [37, 58], "origin": [10, 16], "heading": 0, "facing": 90, "zone": "A1"},
-    {"id": "band6_bot", "comment": "區⑥ 下排 80-59", "range": [80, 59], "origin": [10, 23], "heading": 0, "facing": 270, "zone": "A1"},
+    {"id": "b6_top",   "comment": "第1橫向雙排-北列 37-57", "range": [37, 57], "origin": [16, 12],     "heading": 0,  "facing": 90,  "zone": "A1"},
+    {"id": "b6_cap_e", "comment": "58 東端蓋格",            "list": [58],      "origin": [68.6, 14.75], "heading": 90, "facing": 90,  "zone": "A1"},
+    {"id": "b6_bot",   "comment": "第1橫向雙排-南列 59-79（東→西）", "range": [59, 79], "origin": [66, 17.5], "heading": 180, "facing": 270, "zone": "A1"},
+    {"id": "b6_cap_w", "comment": "80 西端蓋格",            "list": [80],      "origin": [13.4, 14.75], "heading": 90, "facing": 270, "zone": "A1"},
 
-    {"id": "band5_top", "comment": "區⑤ 上排 81-102", "range": [81, 102], "origin": [10, 37], "heading": 0, "facing": 90, "zone": "A2"},
-    {"id": "band5_bot", "comment": "區⑤ 下排 123-103", "range": [123, 103], "origin": [10, 44], "heading": 0, "facing": 270, "zone": "A2"},
+    {"id": "b5_top",   "comment": "第2橫向雙排-北列 81-99",  "range": [81, 99],   "origin": [16, 29.5],  "heading": 0,  "facing": 90,  "zone": "A2"},
+    {"id": "b5_cap_e", "comment": "100 東端蓋格",            "list": [100],       "origin": [68.6, 32.25], "heading": 90, "facing": 90, "zone": "A2"},
+    {"id": "b5_bot",   "comment": "第2橫向雙排-南列 101-121（東→西）", "range": [101, 121], "origin": [66, 35], "heading": 180, "facing": 270, "zone": "A2"},
+    {"id": "b5_cap_w", "comment": "122 西端蓋格",            "list": [122],       "origin": [13.4, 32.25], "heading": 90, "facing": 270, "zone": "A2"},
 
-    {"id": "band4_top", "comment": "區④ 上排 124-145", "range": [124, 145], "origin": [10, 58], "heading": 0, "facing": 90, "zone": "A3"},
-    {"id": "band4_bot", "comment": "區④ 下排 166-146", "range": [166, 146], "origin": [10, 65], "heading": 0, "facing": 270, "zone": "A3"},
+    {"id": "b4_top",   "comment": "第3橫向雙排-北列 123-143", "range": [123, 143], "origin": [16, 44.5], "heading": 0,  "facing": 90,  "zone": "A3"},
+    {"id": "b4_cap_e", "comment": "144 東端蓋格",             "list": [144],       "origin": [68.6, 47.25], "heading": 90, "facing": 90, "zone": "A3"},
+    {"id": "b4_bot",   "comment": "第3橫向雙排-南列 145-165（東→西）", "range": [145, 165], "origin": [66, 50], "heading": 180, "facing": 270, "zone": "A3"},
+    {"id": "b4_cap_w", "comment": "166 西端蓋格",             "list": [166],       "origin": [13.4, 47.25], "heading": 90, "facing": 270, "zone": "A3"},
 
-    {"id": "top_strip", "comment": "上方橫排 175-167", "range": [175, 167], "origin": [64, 6], "heading": 0, "facing": 180, "zone": "A4"},
+    {"id": "ne_col", "comment": "東北側直排 167-175（主場區東緣，鄰建物）", "range": [167, 175], "origin": [74, 9], "heading": 90, "facing": 0, "zone": "A4"},
 
-    {"id": "band3_r1", "comment": "區③ 176-188", "range": [176, 188], "origin": [10, 79], "heading": 0, "facing": 90, "zone": "A0"},
-    {"id": "band3_r2", "comment": "區③ 200-189", "range": [200, 189], "origin": [10, 86], "heading": 0, "facing": 270, "zone": "A0"},
-    {"id": "band3_r3", "comment": "區③ 209-201", "range": [209, 201], "origin": [10, 93], "heading": 0, "facing": 90, "zone": "A0"},
+    {"id": "z3_top",   "comment": "第4雙排-北列 176-187（較短）", "range": [176, 187], "origin": [16, 60],   "heading": 0,  "facing": 90,  "zone": "A0"},
+    {"id": "z3_cap_w", "comment": "188 西端蓋格",                "list": [188],       "origin": [13.4, 62.75], "heading": 90, "facing": 270, "zone": "A0"},
+    {"id": "z3_bot",   "comment": "第4雙排-南列 189-200",        "range": [189, 200], "origin": [16, 65.5], "heading": 0,  "facing": 270, "zone": "A0"},
+    {"id": "z3_r3",    "comment": "單排 209-201（西→東遞減）",   "range": [209, 201], "origin": [16, 75.5], "heading": 0,  "facing": 90,  "zone": "A0"},
 
-    {"id": "band2_r1", "comment": "區② 210-218", "range": [210, 218], "origin": [10, 100], "heading": 0, "facing": 270, "zone": "A5"},
-    {"id": "band2_r2", "comment": "區② 219-224", "range": [219, 224], "origin": [10, 107], "heading": 0, "facing": 90, "zone": "A5"},
-    {"id": "band2_r3", "comment": "區② 225-229", "range": [225, 229], "origin": [10, 116], "heading": 0, "facing": 90, "zone": "A6"},
-    {"id": "band2_r4", "comment": "區② 230-234", "range": [230, 234], "origin": [25, 116], "heading": 0, "facing": 90, "zone": "A6"},
-    {"id": "band2_r5", "comment": "區② 235-237", "range": [235, 237], "origin": [40, 116], "heading": 0, "facing": 90, "zone": "A6"},
-    {"id": "band2_r6", "comment": "區② 238-243", "range": [238, 243], "origin": [10, 123], "heading": 0, "facing": 270, "zone": "A5"},
+    {"id": "z2_r1", "comment": "單排 210-218", "range": [210, 218], "origin": [16, 82],   "heading": 0, "facing": 270, "zone": "A5"},
+    {"id": "z2_r2", "comment": "單排 219-224", "range": [219, 224], "origin": [16, 89.5], "heading": 0, "facing": 90,  "zone": "A5"},
+    {"id": "z2_r3", "comment": "單排 238-243", "range": [238, 243], "origin": [16, 96.5], "heading": 0, "facing": 270, "zone": "A5"},
 
-    {"id": "bus_row", "comment": "甲類大型車 大客車1-4", "list": [1, 2, 3, 4], "name_tpl": "大客車{n}", "origin": [10, 132], "heading": 0, "pitch": 6, "w": 4, "d": 12, "facing": 90, "type": "bus", "zone": "bus"},
+    {"id": "bus", "comment": "甲類大型車 大客車1-4", "list": [1, 2, 3, 4], "name_tpl": "大客車{n}", "origin": [36, 94], "heading": 0, "pitch": 4.5, "w": 4, "d": 12, "facing": 90, "type": "bus", "zone": "bus"},
 
-    {"id": "right_c1", "comment": "右側 244-253", "range": [244, 253], "origin": [72, 16], "heading": 90, "facing": 180, "zone": "A7"},
-    {"id": "right_c2", "comment": "右側 254-267", "range": [254, 267], "origin": [79, 16], "heading": 90, "facing": 0, "zone": "A0"},
-    {"id": "right_c3", "comment": "右側 充電格 268-277", "range": [268, 277], "origin": [86, 16], "heading": 90, "facing": 180, "zone": "A0"},
-    {"id": "right_c4", "comment": "右側 278-279", "range": [278, 279], "origin": [93, 16], "heading": 90, "facing": 0, "zone": "A0"},
-    {"id": "right_c5", "comment": "右側 280-293", "range": [280, 293], "origin": [93, 33], "heading": 90, "facing": 0, "zone": "A0"},
-    {"id": "right_c6", "comment": "右側 294", "list": [294], "origin": [86, 76], "heading": 90, "facing": 180, "zone": "A0"},
-    {"id": "right_c7", "comment": "右側 295-306", "range": [295, 306], "origin": [100, 16], "heading": 90, "facing": 180, "zone": "A7"},
-    {"id": "right_c8", "comment": "右側 307-315", "range": [307, 315], "origin": [107, 16], "heading": 90, "facing": 0, "zone": "A7"}
-  ]
+    {"id": "s_225", "comment": "南緣 225-229", "range": [225, 229], "origin": [16, 104], "heading": 0, "facing": 90, "zone": "A6"},
+    {"id": "s_230", "comment": "南緣 230-234", "range": [230, 234], "origin": [31, 104], "heading": 0, "facing": 90, "zone": "A6"},
+
+    {"id": "s_244", "comment": "婦幼格 250-244（綠地南側，藍色標線）", "range": [250, 244], "origin": [96, 91],    "heading": 0, "facing": 90, "zone": "A0"},
+    {"id": "s_252", "comment": "252-253",                              "range": [252, 253], "origin": [115.5, 91], "heading": 0, "facing": 90, "zone": "A0"},
+
+    {"id": "e_ev",    "comment": "東區充電格 268-277（北排，綠色標線）", "range": [268, 277], "origin": [140, 46],  "heading": 0,  "facing": 90,  "zone": "A0"},
+    {"id": "e_col_w", "comment": "東區西列 267-254（鄰綠地，北→南）",    "range": [267, 254], "origin": [133, 52],  "heading": 90, "facing": 180, "zone": "A0"},
+    {"id": "e_294",   "comment": "294 單格",                            "list": [294],       "origin": [150, 52],  "heading": 90, "facing": 0,   "zone": "A0"},
+    {"id": "e_col_m", "comment": "東區中列 293-280（北→南）",            "range": [293, 280], "origin": [150, 56],  "heading": 90, "facing": 0,   "zone": "A0"},
+    {"id": "e_col_e", "comment": "東區中列背靠背 295-306（北→南）",      "range": [295, 306], "origin": [155.5, 56], "heading": 90, "facing": 180, "zone": "A7"},
+    {"id": "e_278",   "comment": "278-279（東區東北角）",                "range": [278, 279], "origin": [172, 47.5], "heading": 90, "facing": 0,  "zone": "A7"},
+
+    {"id": "edge_307", "comment": "307-308（圖面未標示，暫置東緣待確認）", "range": [307, 308], "origin": [196, 66.5], "heading": 90, "facing": 0, "zone": "A7"},
+    {"id": "edge_309", "comment": "東緣路邊 309/251/237/236/235/315/314（北→南）", "list": [309, 251, 237, 236, 235, 315, 314], "origin": [196, 72], "heading": 90, "facing": 0, "zone": "A7"},
+    {"id": "se_310",   "comment": "東南角 310-313", "range": [310, 313], "origin": [180, 95], "heading": 0, "facing": 90, "zone": "A7"}
+  ],
+  "features": {
+    "lot": [0, 0, 200, 112],
+    "grass": [[75, 40, 130, 88]],
+    "moto": [[48, 102.5, 120, 110], [128, 102.5, 163, 110]],
+    "roads": [[-15, 114, 215, 126], [203, -15, 213, 126], [-15, -9, 203, -3], [-14, -3, -6, 114]],
+    "buildings": [[122, 2, 150, 24, 20], [152, 2, 174, 20, 26], [176, 4, 198, 26, 15], [126, 26, 148, 38, 10]],
+    "walls": [[-0.9, 0, -0.1, 98], [0, -0.9, 118, -0.1]],
+    "trees": [[77, 43], [85, 41], [93, 42], [101, 44], [109, 41], [117, 43], [126, 45], [78, 60], [127, 55], [126, 75], [80, 80], [91, 86], [78, 38], [86, 37], [94, 38], [102, 36], [110, 37], [118, 38], [133, 40], [140, 41]],
+    "street_trees": [[20, 113.2], [33, 113.2], [46, 113.2], [59, 113.2], [72, 113.2], [85, 113.2], [98, 113.2], [111, 113.2], [124, 113.2], [137, 113.2], [150, 113.2], [163, 113.2]],
+    "gates": [[8, 111, 90], [62, 111, 90], [158, 111, 90], [193, 58, 0]]
+  }
 }

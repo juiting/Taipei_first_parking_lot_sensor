@@ -100,6 +100,7 @@ def build() -> dict:
             "bounds": bounds,
             "duplicates": dups,
         },
+        "features": src.get("features", {}),
         "spaces": spaces,
     }
     return layout
@@ -123,6 +124,28 @@ def render_preview(layout: dict) -> str:
         f'viewBox="0 0 {W:.0f} {H:.0f}" font-family="sans-serif">',
         f'<rect width="{W:.0f}" height="{H:.0f}" fill="#0f172a"/>',
     ]
+
+    # 場域特徵（校對相對位置用）
+    feats = layout.get("features", {})
+
+    def frect(r, fill, opacity=0.6):
+        x1, y1, x2, y2 = r[:4]
+        parts.append(
+            f'<rect x="{px(x1):.1f}" y="{py(y1):.1f}" width="{(x2 - x1) * scale:.1f}" '
+            f'height="{(y2 - y1) * scale:.1f}" fill="{fill}" fill-opacity="{opacity}"/>'
+        )
+
+    if feats.get("lot"):
+        frect(feats["lot"], "#1c2430", 1.0)
+    for r in feats.get("roads", []):
+        frect(r, "#0b0f16", 1.0)
+    for r in feats.get("grass", []):
+        frect(r, "#2f6b3d", 0.8)
+    for r in feats.get("moto", []):
+        frect(r, "#3a4150", 0.8)
+    for r in feats.get("buildings", []):
+        frect(r, "#64748b", 0.7)
+
     for s in layout["spaces"]:
         color = ZONE_COLORS.get(s["zone"]) or (ZONE_COLORS["bus"] if s["type"] == "bus" else "#475569")
         wpx = s["w"] * scale

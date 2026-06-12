@@ -33,3 +33,16 @@ export interface Change {
   new_status: Status
   event_time?: string | null
 }
+
+// 場域環境特徵（rect = [x1, y1, x2, y2]，building 多帶高度，gate = [x, y, rot]）
+export interface SiteFeatures {
+  lot?: number[]
+  grass?: number[][]
+  moto?: number[][]
+  roads?: number[][]
+  buildings?: number[][]
+  walls?: number[][]
+  trees?: number[][]
+  street_trees?: number[][]
+  gates?: number[][]
+}

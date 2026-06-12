@@ -1,5 +1,5 @@
 import { create } from 'zustand'
-import type { Space, Summary, Change } from '../types'
+import type { Space, Summary, Change, SiteFeatures } from '../types'
 
 interface State {
   spaces: Space[]
@@ -9,6 +9,8 @@ interface State {
   fetchedAt: string | null
   selected: string | null
   recentChanges: Change[]
+  features: SiteFeatures | null
+  loadLayout: () => Promise<void>
   setSelected: (name: string | null) => void
   _applySnapshot: (spaces: Space[], summary: Summary | null, fetchedAt: string | null) => void
   _applyUpdate: (changes: Change[], summary: Summary | null, fetchedAt: string | null) => void
@@ -23,6 +25,17 @@ export const useStore = create<State>((set) => ({
   fetchedAt: null,
   selected: null,
   recentChanges: [],
+  features: null,
+
+  loadLayout: async () => {
+    try {
+      const r = await fetch('/api/layout')
+      const d = await r.json()
+      set({ features: d.features ?? null })
+    } catch {
+      // 佈局載入失敗不影響即時狀態，僅缺環境裝飾
+    }
+  },
 
   setSelected: (name) => set({ selected: name }),
 

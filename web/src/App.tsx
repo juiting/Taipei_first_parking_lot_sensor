@@ -9,10 +9,12 @@ import { Legend } from './hud/Legend'
 export default function App() {
   const view = useViewState()
   const spaces = useStore((s) => s.spaces)
+  const loadLayout = useStore((s) => s.loadLayout)
 
   useEffect(() => {
     connectWS()
-  }, [])
+    loadLayout()
+  }, [loadLayout])
 
   return (
     <div style={{ position: 'fixed', inset: 0, background: '#0b1220', overflow: 'hidden' }}>
