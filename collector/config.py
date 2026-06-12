@@ -10,7 +10,8 @@ if getattr(sys, "frozen", False):
     PROJECT_ROOT = Path(sys.executable).resolve().parent
 else:
     PROJECT_ROOT = Path(__file__).resolve().parent.parent
-load_dotenv(PROJECT_ROOT / ".env")
+# utf-8-sig：容忍 Windows PowerShell 5.1 寫出的 UTF-8 BOM（否則第一個變數名會黏到 BOM 讀不到）
+load_dotenv(PROJECT_ROOT / ".env", encoding="utf-8-sig")
 
 
 def _require(key: str) -> str:

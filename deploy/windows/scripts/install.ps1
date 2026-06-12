@@ -63,7 +63,7 @@ if ($needConfig) {
 
     $user = Read-Host '  帳號'
     $pass = Read-Host '  密碼'
-    @(
+    $lines = @(
         "CARIN_BASE_URL=$base",
         "CARIN_USERNAME=$user",
         "CARIN_PASSWORD=$pass",
@@ -72,7 +72,9 @@ if ($needConfig) {
         'DB_PATH=data/geomag.sqlite',
         'API_HOST=127.0.0.1',
         'API_PORT=8610'
-    ) | Set-Content -Path $EnvPath -Encoding UTF8
+    )
+    # 用 .NET API 寫檔：UTF-8 不帶 BOM（Windows PowerShell 5.1 的 Set-Content -Encoding UTF8 會帶 BOM）
+    [System.IO.File]::WriteAllLines($EnvPath, $lines)
     Write-Host '已建立 .env 設定檔。'
 }
 

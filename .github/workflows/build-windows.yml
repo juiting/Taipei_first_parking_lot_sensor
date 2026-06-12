@@ -66,6 +66,7 @@ jobs:
         shell: pwsh
         run: |
           # 用假連線資訊啟動：collector 會連線失敗但服務照常起來，足以驗證打包完整性
+          # 刻意寫成「帶 BOM 的 UTF-8」：迴歸測試 Windows PowerShell 5.1 寫出的 .env 也能被讀取
           @(
             'CARIN_BASE_URL=http://127.0.0.1:9',
             'CARIN_USERNAME=smoke',
@@ -73,7 +74,7 @@ jobs:
             'POLL_INTERVAL=8',
             'API_HOST=127.0.0.1',
             'API_PORT=8610'
-          ) | Set-Content P1_Geomag_Monitor/.env -Encoding UTF8
+          ) | Set-Content P1_Geomag_Monitor/.env -Encoding utf8BOM
           $p = Start-Process -FilePath "P1_Geomag_Monitor/GeomagMonitor.exe" -WorkingDirectory "P1_Geomag_Monitor" -PassThru
           $ok = $false
           foreach ($i in 1..30) {
