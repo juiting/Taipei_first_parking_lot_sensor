@@ -38,6 +38,15 @@ CREATE TABLE IF NOT EXISTS status_history (
 );
 CREATE INDEX IF NOT EXISTS idx_history_space ON status_history(space_id, id DESC);
 CREATE INDEX IF NOT EXISTS idx_history_name ON status_history(name, id DESC);
+CREATE TABLE IF NOT EXISTS sensor_health (
+    name       TEXT PRIMARY KEY,
+    mac        TEXT,
+    remark     TEXT,
+    battery    INTEGER,
+    battery_at TEXT,
+    rssi       INTEGER,
+    rssi_at    TEXT
+);
 """
 
 
@@ -93,6 +102,27 @@ class GeomagDB:
                 })
         self._conn.commit()
         return changes
+
+    def upsert_sensor_health(self, health: dict[str, dict]) -> None:
+        cur = self._conn.cursor()
+        for name, h in health.items():
+            cur.execute(
+                """INSERT INTO sensor_health(name, mac, remark, battery, battery_at, rssi, rssi_at)
+                   VALUES(?,?,?,?,?,?,?)
+                   ON CONFLICT(name) DO UPDATE SET
+                     mac=excluded.mac, remark=excluded.remark,
+                     battery=excluded.battery, battery_at=excluded.battery_at,
+                     rssi=excluded.rssi, rssi_at=excluded.rssi_at""",
+                (name, h.get("mac"), h.get("remark"), h.get("battery"),
+                 h.get("battery_at"), h.get("rssi"), h.get("rssi_at")),
+            )
+        self._conn.commit()
+
+    def load_sensor_health(self) -> dict[str, dict]:
+        cur = self._conn.execute(
+            "SELECT name, mac, remark, battery, battery_at, rssi, rssi_at FROM sensor_health")
+        cols = [c[0] for c in cur.description]
+        return {row[0]: dict(zip(cols, row)) for row in cur.fetchall()}
 
     def get_history(self, name: str, limit: int = 50) -> list[dict]:
         cur = self._conn.execute(

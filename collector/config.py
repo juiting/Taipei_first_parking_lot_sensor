@@ -28,6 +28,13 @@ CARIN_PASSWORD = os.getenv("CARIN_PASSWORD", "")
 POLL_INTERVAL = float(os.getenv("POLL_INTERVAL", "8"))
 OFFLINE_THRESHOLD_HOURS = float(os.getenv("OFFLINE_THRESHOLD_HOURS", "2"))
 
+# Brickcom 感測器管理平台（電量 / RSSI）。未設定 URL 時此功能自動停用。
+BRICKCOM_STATUS_URL = os.getenv("BRICKCOM_STATUS_URL", "").strip()
+BRICKCOM_DEBUG_BASE = os.getenv("BRICKCOM_DEBUG_BASE", "").strip().rstrip("/")
+BRICKCOM_BATTERY_INTERVAL = float(os.getenv("BRICKCOM_BATTERY_INTERVAL", "300"))   # 電量全表輪詢（秒）
+BRICKCOM_RSSI_INTERVAL = float(os.getenv("BRICKCOM_RSSI_INTERVAL", "1800"))        # RSSI 全場掃描間隔（秒）
+BRICKCOM_RSSI_PACING = float(os.getenv("BRICKCOM_RSSI_PACING", "0.3"))             # 逐顆查詢間隔（秒），避免打爆廠商服務
+
 DB_PATH = str(PROJECT_ROOT / os.getenv("DB_PATH", "data/geomag.sqlite"))
 LAYOUT_PATH = PROJECT_ROOT / "data" / "layout" / "layout.json"
 

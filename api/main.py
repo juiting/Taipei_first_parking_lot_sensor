@@ -16,6 +16,8 @@ from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
 
 from collector import config
+from collector.brickcom_client import BrickcomClient
+from collector.brickcom_poller import BrickcomPoller
 from collector.carin_client import CarinSource
 from collector.db import GeomagDB
 from collector.poller import Poller
@@ -73,7 +75,17 @@ async def lifespan(app: FastAPI):
 
     poller.subscribe(on_update)
 
+    # Brickcom 健康度（電量/RSSI）：未設定 URL 時不啟動，原功能不受影響
+    brickcom: BrickcomPoller | None = None
+    if config.BRICKCOM_STATUS_URL and config.BRICKCOM_DEBUG_BASE:
+        brickcom = BrickcomPoller(
+            BrickcomClient(config.BRICKCOM_STATUS_URL, config.BRICKCOM_DEBUG_BASE), db)
+        brickcom.subscribe(on_update)
+    else:
+        log.info("未設定 BRICKCOM_STATUS_URL，電量/RSSI 功能停用")
+
     app.state.poller = poller
+    app.state.brickcom = brickcom
     app.state.db = db
     app.state.ws = ws_manager
     app.state.layout = load_layout()
@@ -85,11 +97,15 @@ async def lifespan(app: FastAPI):
     except Exception:
         log.exception("初次輪詢失敗，仍啟動服務並持續重試")
     poller.start()
+    if brickcom:
+        brickcom.start()
 
     try:
         yield
     finally:
         await poller.stop()
+        if brickcom:
+            await brickcom.stop()
         db.close()
 
 
@@ -97,9 +113,11 @@ app = FastAPI(title="第一停車場地磁 3D 監控 API", lifespan=lifespan)
 
 
 def _merge_spaces() -> list[dict]:
-    """layout（位置）left-join collector（現況）。"""
+    """layout（位置）left-join collector（現況）left-join Brickcom（電量/RSSI）。"""
     poller: Poller = app.state.poller
+    brickcom: BrickcomPoller | None = app.state.brickcom
     by_name = {r.name: r for r in poller.snapshot.values()}
+    health = brickcom.health if brickcom else {}
     out = []
     for s in app.state.layout["spaces"]:
         rec = by_name.get(s["name"])
@@ -115,6 +133,14 @@ def _merge_spaces() -> list[dict]:
             })
         else:
             merged.update({"status": "Unknown", "offline": True})
+        h = health.get(s["name"])
+        if h:
+            merged.update({
+                "battery": h.get("battery"),
+                "battery_at": h.get("battery_at"),
+                "rssi": h.get("rssi"),
+                "rssi_at": h.get("rssi_at"),
+            })
         out.append(merged)
     return out
 
