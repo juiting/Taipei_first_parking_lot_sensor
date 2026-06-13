@@ -78,7 +78,38 @@ if ($needConfig) {
     Write-Host '已建立 .env 設定檔。'
 }
 
-# 2) 註冊「登入自動啟動」工作排程，異常時每分鐘自動重啟
+# 2) 電量/訊號監測（Brickcom，選填）：.env 尚未設定時詢問，略過不影響其他功能
+$envContent = if (Test-Path $EnvPath) { Get-Content $EnvPath -Raw } else { '' }
+if ($envContent -notmatch 'BRICKCOM_STATUS_URL=http') {
+    Write-Host ''
+    $ans = Read-Host '是否設定電量/訊號監測（Brickcom，選填）？（y=設定，直接按 Enter=略過）'
+    if ($ans -match '^[Yy]') {
+        $surl = (Read-Host '  Brickcom 狀態頁完整網址（含 customer/location 參數，可直接貼上）').Trim()
+        $durl = (Read-Host '  Brickcom 記錄服務網址（埠號 5005 那組）').Trim()
+        if ($surl -and $surl -notmatch '^https?://') { $surl = "http://$surl" }
+        if ($durl -and $durl -notmatch '^https?://') { $durl = "http://$durl" }
+        if ($surl -and $durl) {
+            # AppendAllLines 寫出 UTF-8 無 BOM，避免 PowerShell 5.1 Set-Content 的 BOM 問題
+            [System.IO.File]::AppendAllLines($EnvPath, [string[]]@(
+                '',
+                '# Brickcom 感測器管理平台（電量/RSSI）',
+                "BRICKCOM_STATUS_URL=$surl",
+                "BRICKCOM_DEBUG_BASE=$durl"
+            ))
+            Write-Host '  測試連線…' -NoNewline
+            try {
+                $null = Invoke-WebRequest $surl -UseBasicParsing -TimeoutSec 8
+                Write-Host ' [OK] 連線成功，電量/訊號功能已啟用' -ForegroundColor Green
+            } catch {
+                Write-Host ' [X] 連不上（設定已保存，連線恢復後自動生效）' -ForegroundColor Yellow
+            }
+        } else {
+            Write-Host '  網址不完整，略過 Brickcom 設定（之後可重跑 install.bat 補設定）。' -ForegroundColor Yellow
+        }
+    }
+}
+
+# 3) 註冊「登入自動啟動」工作排程，異常時每分鐘自動重啟
 $action   = New-ScheduledTaskAction -Execute $Exe -WorkingDirectory $AppDir
 $trigger  = New-ScheduledTaskTrigger -AtLogOn -User $env:USERNAME
 $settings = New-ScheduledTaskSettingsSet -RestartCount 99 -RestartInterval (New-TimeSpan -Minutes 1) `
@@ -86,7 +117,7 @@ $settings = New-ScheduledTaskSettingsSet -RestartCount 99 -RestartInterval (New-
 Register-ScheduledTask -TaskName $TaskName -Action $action -Trigger $trigger -Settings $settings -Force | Out-Null
 Write-Host "已註冊開機自動啟動（工作排程器：$TaskName）。"
 
-# 3) 啟動並等待服務就緒
+# 4) 啟動並等待服務就緒
 Get-Process GeomagMonitor -ErrorAction SilentlyContinue | Stop-Process -Force -ErrorAction SilentlyContinue
 Start-ScheduledTask -TaskName $TaskName
 Write-Host '啟動服務中' -NoNewline
@@ -119,7 +150,7 @@ if ($ok) {
     }
 }
 
-# 4) 建立桌面捷徑（以預設瀏覽器分頁開啟；想全螢幕可在瀏覽器按 F11）
+# 5) 建立桌面捷徑（以預設瀏覽器分頁開啟；想全螢幕可在瀏覽器按 F11）
 $Desktop = [Environment]::GetFolderPath('Desktop')
 @('[InternetShortcut]', "URL=$Url") | Set-Content -Path (Join-Path $Desktop '第一停車場監控.url') -Encoding ASCII
 # 清除舊版的全螢幕捷徑
