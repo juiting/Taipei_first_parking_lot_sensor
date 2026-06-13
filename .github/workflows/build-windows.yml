@@ -83,6 +83,13 @@ jobs:
               if ($r.StatusCode -eq 200) { $ok = $true; break }
             } catch { Start-Sleep -Seconds 2 }
           }
+          # Excel 匯出（驗證 openpyxl 打包完整）
+          if ($ok) {
+            try {
+              $x = Invoke-WebRequest 'http://127.0.0.1:8610/api/export/xlsx' -UseBasicParsing -TimeoutSec 15
+              if ($x.StatusCode -ne 200 -or $x.Content.Length -lt 1000) { $ok = $false; Write-Host 'Excel 匯出回應異常' }
+            } catch { $ok = $false; Write-Host "Excel 匯出失敗: $_" }
+          }
           Stop-Process -Id $p.Id -Force -ErrorAction SilentlyContinue
           Get-Content P1_Geomag_Monitor/logs/geomag.log -ErrorAction SilentlyContinue | Select-Object -Last 20
           if (-not $ok) { Write-Error '煙霧測試失敗：exe 啟動後 API 無回應' }

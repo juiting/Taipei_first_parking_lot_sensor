@@ -12,7 +12,7 @@ from contextlib import asynccontextmanager
 from pathlib import Path
 
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, Response
 from fastapi.staticfiles import StaticFiles
 
 from collector import config
@@ -166,6 +166,22 @@ async def get_summary():
 @app.get("/api/spaces/{name}/history")
 async def get_history(name: str, limit: int = 50):
     return {"name": name, "history": app.state.db.get_history(name, limit)}
+
+
+@app.get("/api/export/xlsx")
+async def export_xlsx():
+    from datetime import datetime
+
+    from .export_xlsx import build_workbook
+
+    health = app.state.brickcom.health if app.state.brickcom else {}
+    content = build_workbook(_merge_spaces(), health, "台北市第一停車場")
+    fname = f"P1_parking_{datetime.now():%Y%m%d_%H%M%S}.xlsx"
+    return Response(
+        content=content,
+        media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        headers={"Content-Disposition": f'attachment; filename="{fname}"'},
+    )
 
 
 @app.websocket("/ws")

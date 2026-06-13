@@ -76,6 +76,17 @@ export function StatsBar() {
       <Stat label="離線" value={summary.offline} color={OFFLINE_COLOR} />
       <BatteryDistribution />
       <div style={{ flex: 1 }} />
+      <a
+        href="/api/export/xlsx"
+        title="匯出當下停車狀況、電量與訊號（Excel）"
+        style={{
+          flexShrink: 0, padding: '6px 12px', fontSize: 13, color: '#cbd5e1',
+          background: 'rgba(15,23,42,0.85)', border: '1px solid #1e293b',
+          borderRadius: 8, textDecoration: 'none', marginRight: 14,
+        }}
+      >
+        ⬇ 匯出 Excel
+      </a>
       <div style={{ textAlign: 'right' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 6, justifyContent: 'flex-end' }}>
           <span style={{
