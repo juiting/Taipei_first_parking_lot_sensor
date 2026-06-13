@@ -1,5 +1,6 @@
 import { create } from 'zustand'
-import type { Space, Summary, Change, SiteFeatures } from '../types'
+import type { Space, Summary, Change, SiteFeatures, HealthEntry } from '../types'
+import type { ViewMode } from '../scene/colors'
 
 interface State {
   spaces: Space[]
@@ -11,10 +12,13 @@ interface State {
   recentChanges: Change[]
   features: SiteFeatures | null
   nowTick: number
+  viewMode: ViewMode
+  setViewMode: (m: ViewMode) => void
   loadLayout: () => Promise<void>
   setSelected: (name: string | null) => void
   _applySnapshot: (spaces: Space[], summary: Summary | null, fetchedAt: string | null) => void
   _applyUpdate: (changes: Change[], summary: Summary | null, fetchedAt: string | null) => void
+  _applyHealth: (health: Record<string, HealthEntry>) => void
   _setConnected: (v: boolean) => void
 }
 
@@ -28,6 +32,9 @@ export const useStore = create<State>((set) => ({
   recentChanges: [],
   features: null,
   nowTick: Date.now(),
+  viewMode: 'status' as ViewMode,
+
+  setViewMode: (m) => set({ viewMode: m }),
 
   loadLayout: async () => {
     try {
@@ -71,6 +78,24 @@ export const useStore = create<State>((set) => ({
       }
     }),
 
+  _applyHealth: (health) =>
+    set((state) => {
+      const byName = { ...state.byName }
+      for (const [name, h] of Object.entries(health)) {
+        const prev = byName[name]
+        if (prev) {
+          byName[name] = {
+            ...prev,
+            battery: h.battery ?? null,
+            battery_at: h.battery_at ?? prev.battery_at,
+            rssi: h.rssi ?? prev.rssi ?? null,
+            rssi_at: h.rssi_at ?? prev.rssi_at,
+          }
+        }
+      }
+      return { byName, spaces: state.spaces.map((s) => byName[s.name] ?? s) }
+    }),
+
   _setConnected: (v) => set({ connected: v }),
 }))
 
@@ -103,6 +128,8 @@ export function connectWS() {
       st._applySnapshot(msg.spaces, msg.summary, msg.fetched_at)
     } else if (msg.type === 'update' || msg.type === 'tick') {
       st._applyUpdate(msg.changes ?? [], msg.summary, msg.fetched_at)
+    } else if (msg.type === 'health') {
+      st._applyHealth(msg.spaces ?? {})
     }
   }
   // 心跳，避免代理層斷線

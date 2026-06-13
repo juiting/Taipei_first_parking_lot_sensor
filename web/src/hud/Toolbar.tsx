@@ -1,4 +1,5 @@
 import type { ViewPreset } from '../scene/Scene'
+import { useStore } from '../store/store'
 
 interface Props {
   preset: ViewPreset
@@ -17,6 +18,8 @@ const btn = (active: boolean): React.CSSProperties => ({
 })
 
 export function Toolbar({ preset, setPreset, autoRotate, setAutoRotate, showLabels, setShowLabels }: Props) {
+  const viewMode = useStore((s) => s.viewMode)
+  const setViewMode = useStore((s) => s.setViewMode)
   return (
     <div style={{
       position: 'absolute', bottom: 16, left: '50%', transform: 'translateX(-50%)',
@@ -29,6 +32,10 @@ export function Toolbar({ preset, setPreset, autoRotate, setAutoRotate, showLabe
       <div style={{ width: 1, background: '#1e293b' }} />
       <button style={btn(autoRotate)} onClick={() => setAutoRotate(!autoRotate)}>環繞</button>
       <button style={btn(showLabels)} onClick={() => setShowLabels(!showLabels)}>編號</button>
+      <div style={{ width: 1, background: '#1e293b' }} />
+      <button style={btn(viewMode === 'status')} onClick={() => setViewMode('status')}>狀態</button>
+      <button style={btn(viewMode === 'battery')} onClick={() => setViewMode('battery')}>電量</button>
+      <button style={btn(viewMode === 'signal')} onClick={() => setViewMode('signal')}>訊號</button>
     </div>
   )
 }

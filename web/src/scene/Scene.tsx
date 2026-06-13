@@ -76,6 +76,7 @@ export function Scene({
   const selected = useStore((s) => s.selected)
   const setSelected = useStore((s) => s.setSelected)
   const features = useStore((s) => s.features)
+  const viewMode = useStore((s) => s.viewMode)
   const { cx, cy, w, h } = useCenter()
   // drei 的 OrbitControls ref 型別為其內部類別，這裡用 any 接、再以最小介面在 CameraRig 使用
   const controlsRef = useRef<OrbitControlsImpl | null>(null)
@@ -115,6 +116,7 @@ export function Scene({
           space={s}
           cx={cx}
           cy={cy}
+          mode={viewMode}
           showLabel={showLabels}
           selected={selected === s.name}
           onSelect={setSelected}

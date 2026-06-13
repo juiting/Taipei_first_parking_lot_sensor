@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useStore } from '../store/store'
-import { STATUS_LABEL, colorFor } from '../scene/colors'
+import { STATUS_LABEL, colorFor, batteryColor, rssiLevel, NO_DATA_COLOR } from '../scene/colors'
 import type { Change } from '../types'
 
 export function DetailPanel() {
@@ -50,6 +50,28 @@ export function DetailPanel() {
       <Row k="IMEI" v={space.imei || '—'} />
       <Row k="狀態變更" v={space.event_time || '—'} />
       <Row k="最後回報" v={space.last_heartbeat || '—'} />
+      <Row k="電量" v={
+        space.battery !== null && space.battery !== undefined ? (
+          <span title={space.battery_at ? `更新：${space.battery_at}` : undefined}>
+            <span style={{
+              display: 'inline-block', width: 10, height: 10, borderRadius: '50%',
+              background: batteryColor(space.battery).color, marginRight: 6, verticalAlign: 'middle',
+            }} />
+            {space.battery}%
+          </span>
+        ) : '—'
+      } />
+      <Row k="訊號 RSSI" v={
+        space.rssi !== null && space.rssi !== undefined ? (
+          <span title={space.rssi_at ? `量測：${space.rssi_at}` : undefined}>
+            <span style={{
+              display: 'inline-block', width: 10, height: 10, borderRadius: '50%',
+              background: rssiLevel(space.rssi)?.color ?? NO_DATA_COLOR, marginRight: 6, verticalAlign: 'middle',
+            }} />
+            {space.rssi} dBm（{rssiLevel(space.rssi)?.label ?? '—'}）
+          </span>
+        ) : '—'
+      } />
 
       <div style={{ marginTop: 14, fontSize: 12, color: '#94a3b8' }}>近期狀態變化</div>
       <div style={{ marginTop: 6, maxHeight: 180, overflowY: 'auto' }}>

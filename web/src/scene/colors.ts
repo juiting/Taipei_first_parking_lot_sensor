@@ -33,6 +33,61 @@ export const STATUS_LABEL: Record<Status, string> = {
   Unknown: '無資料',
 }
 
+// ---- 電量色階（≥95 綠、80–95 淺綠、50–80 黃、30–50 淺紅、10–30 紅、<10 閃紅）----
+export const NO_DATA_COLOR = '#334155'
+
+export interface BatteryLevel {
+  label: string
+  color: string
+  blink?: boolean
+  match: (b: number) => boolean
+}
+
+export const BATTERY_LEVELS: BatteryLevel[] = [
+  { label: '≥95%',   color: '#22c55e', match: (b) => b >= 95 },
+  { label: '80–95%', color: '#86efac', match: (b) => b >= 80 },
+  { label: '50–80%', color: '#eab308', match: (b) => b >= 50 },
+  { label: '30–50%', color: '#f87171', match: (b) => b >= 30 },
+  { label: '10–30%', color: '#dc2626', match: (b) => b >= 10 },
+  { label: '<10%',   color: '#dc2626', blink: true, match: () => true },
+]
+
+export function batteryLevel(b: number | null | undefined): BatteryLevel | null {
+  if (b === null || b === undefined) return null
+  return BATTERY_LEVELS.find((l) => l.match(b)) ?? null
+}
+
+export function batteryColor(b: number | null | undefined): { color: string; blink: boolean } {
+  const l = batteryLevel(b)
+  return l ? { color: l.color, blink: !!l.blink } : { color: NO_DATA_COLOR, blink: false }
+}
+
+// ---- RSSI 分級（NB-IoT，dBm）----
+export interface RssiLevel {
+  label: string
+  range: string
+  color: string
+  match: (r: number) => boolean
+}
+
+export const RSSI_LEVELS: RssiLevel[] = [
+  { label: '優', range: '≥ -85',      color: '#22c55e', match: (r) => r >= -85 },
+  { label: '良', range: '-85～-95',   color: '#86efac', match: (r) => r >= -95 },
+  { label: '中', range: '-95～-105',  color: '#eab308', match: (r) => r >= -105 },
+  { label: '差', range: '< -105',     color: '#ef4444', match: () => true },
+]
+
+export function rssiLevel(r: number | null | undefined): RssiLevel | null {
+  if (r === null || r === undefined) return null
+  return RSSI_LEVELS.find((l) => l.match(r)) ?? null
+}
+
+export function rssiColor(r: number | null | undefined): string {
+  return rssiLevel(r)?.color ?? NO_DATA_COLOR
+}
+
+export type ViewMode = 'status' | 'battery' | 'signal'
+
 export function colorFor(status: Status, offline: boolean): string {
   if (offline) return OFFLINE_COLOR
   return STATUS_COLOR[status] ?? STATUS_COLOR.Unknown

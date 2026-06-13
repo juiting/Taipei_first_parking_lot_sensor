@@ -16,6 +16,17 @@ export interface Space {
   last_heartbeat?: string | null
   imei?: string | null
   tags?: string[]
+  battery?: number | null
+  battery_at?: string | null
+  rssi?: number | null
+  rssi_at?: string | null
+}
+
+export interface HealthEntry {
+  battery?: number | null
+  battery_at?: string | null
+  rssi?: number | null
+  rssi_at?: string | null
 }
 
 export interface Summary {

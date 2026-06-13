@@ -1,5 +1,46 @@
+import { useMemo } from 'react'
 import { useStore } from '../store/store'
-import { STATUS_COLOR, OFFLINE_COLOR } from '../scene/colors'
+import { STATUS_COLOR, OFFLINE_COLOR, BATTERY_LEVELS, batteryLevel, NO_DATA_COLOR } from '../scene/colors'
+
+// 迷你電量分布條：六段色帶寬度依格數比例，懸停看明細，點擊切到電量檢視
+function BatteryDistribution() {
+  const spaces = useStore((s) => s.spaces)
+  const setViewMode = useStore((s) => s.setViewMode)
+  const dist = useMemo(() => {
+    const counts = BATTERY_LEVELS.map(() => 0)
+    let none = 0
+    for (const s of spaces) {
+      const l = batteryLevel(s.battery)
+      if (l) counts[BATTERY_LEVELS.indexOf(l)] += 1
+      else none += 1
+    }
+    return { counts, none, total: spaces.length }
+  }, [spaces])
+
+  if (!dist.total || dist.none === dist.total) return null  // 尚無電量資料時不顯示
+
+  const low = dist.counts[3] + dist.counts[4] + dist.counts[5]  // <50% 總數
+  return (
+    <div
+      onClick={() => setViewMode('battery')}
+      title={BATTERY_LEVELS.map((l, i) => `${l.label}: ${dist.counts[i]} 格`).join('\n')
+        + (dist.none ? `\n無資料: ${dist.none} 格` : '')}
+      style={{ cursor: 'pointer', minWidth: 150, flexShrink: 0 }}
+    >
+      <div style={{ display: 'flex', height: 10, borderRadius: 5, overflow: 'hidden', width: 150 }}>
+        {BATTERY_LEVELS.map((l, i) => dist.counts[i] > 0 && (
+          <div key={l.label} style={{
+            flexGrow: dist.counts[i], minWidth: 3, background: l.color,
+          }} />
+        ))}
+        {dist.none > 0 && <div style={{ flexGrow: dist.none, minWidth: 3, background: NO_DATA_COLOR }} />}
+      </div>
+      <div style={{ fontSize: 11, color: '#94a3b8', marginTop: 3, textAlign: 'center' }}>
+        電量分布{low > 0 && <span style={{ color: '#f87171' }}>（低電量 {low} 格）</span>}
+      </div>
+    </div>
+  )
+}
 
 function Stat({ label, value, color }: { label: string; value: number | string; color?: string }) {
   return (
@@ -33,6 +74,7 @@ export function StatsBar() {
       <Stat label="在席" value={c.Occupied ?? 0} color={STATUS_COLOR.Occupied} />
       <Stat label="維護" value={c.Maintenance ?? 0} color={STATUS_COLOR.Maintenance} />
       <Stat label="離線" value={summary.offline} color={OFFLINE_COLOR} />
+      <BatteryDistribution />
       <div style={{ flex: 1 }} />
       <div style={{ textAlign: 'right' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 6, justifyContent: 'flex-end' }}>

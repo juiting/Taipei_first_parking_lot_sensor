@@ -4,7 +4,10 @@ import { Text } from '@react-three/drei'
 import { CanvasTexture } from 'three'
 import type { Mesh, MeshStandardMaterial } from 'three'
 import type { Space } from '../types'
-import { colorFor, isNewArrival, NEW_ARRIVAL_CAR_COLOR, CAR_COLOR, BUS_COLOR } from './colors'
+import {
+  colorFor, isNewArrival, NEW_ARRIVAL_CAR_COLOR, CAR_COLOR, BUS_COLOR,
+  batteryColor, rssiColor, type ViewMode,
+} from './colors'
 import { useStore } from '../store/store'
 import { Car } from './Car'
 
@@ -30,6 +33,7 @@ interface Props {
   space: Space
   cx: number
   cy: number
+  mode: ViewMode
   showLabel: boolean
   selected: boolean
   onSelect: (name: string) => void
@@ -37,21 +41,34 @@ interface Props {
 
 // local +x = facing 方向；格深 d 沿 x、格寬 w 沿 z。
 export const ParkingSpace = memo(function ParkingSpace({
-  space, cx, cy, showLabel, selected, onSelect,
+  space, cx, cy, mode, showLabel, selected, onSelect,
 }: Props) {
   const padMat = useRef<MeshStandardMaterial>(null)
   const padRef = useRef<Mesh>(null)
   const nowTick = useStore((s) => s.nowTick)
-  const color = colorFor(space.status, space.offline)
   const occupied = space.status === 'Occupied'
   const isBus = space.type === 'bus'
-  // 剛停入（5 分鐘內變為在席）→ 整車紅色，逾時隨 nowTick 自動回灰
-  const newArrival = occupied && isNewArrival(space.event_time, nowTick)
+  // 剛停入（5 分鐘內變為在席）→ 整車紅色，逾時隨 nowTick 自動回灰（僅狀態模式）
+  const newArrival = mode === 'status' && occupied && isNewArrival(space.event_time, nowTick)
 
-  // 離線：閃爍；被選取：脈動抬升
+  // 依檢視模式決定地墊顏色與閃爍：狀態=離線閃紫、電量=<10% 閃紅
+  let color: string
+  let blink = false
+  if (mode === 'battery') {
+    const b = batteryColor(space.battery)
+    color = b.color
+    blink = b.blink
+  } else if (mode === 'signal') {
+    color = rssiColor(space.rssi)
+  } else {
+    color = colorFor(space.status, space.offline)
+    blink = space.offline
+  }
+
+  // 閃爍 / 被選取：脈動抬升
   useFrame(({ clock }) => {
     const t = clock.elapsedTime
-    if (space.offline && padMat.current) {
+    if (blink && padMat.current) {
       padMat.current.emissiveIntensity = 0.4 + 0.4 * Math.sin(t * 4)
     }
     if (selected && padRef.current) {
@@ -95,10 +112,10 @@ export const ParkingSpace = memo(function ParkingSpace({
           ref={padMat}
           color={color}
           emissive={color}
-          emissiveIntensity={space.offline ? 0.6 : occupied ? 0.12 : 0.4}
+          emissiveIntensity={blink ? 0.6 : mode !== 'status' ? 0.4 : occupied ? 0.12 : 0.4}
           roughness={0.6}
           transparent
-          opacity={occupied ? 0.55 : 0.92}
+          opacity={mode !== 'status' ? 0.92 : occupied ? 0.55 : 0.92}
         />
       </mesh>
 
@@ -110,8 +127,8 @@ export const ParkingSpace = memo(function ParkingSpace({
         </mesh>
       )}
 
-      {/* 有車則顯示車輛（剛停入 5 分鐘內整車紅色） */}
-      {occupied && (
+      {/* 有車則顯示車輛（剛停入 5 分鐘內整車紅色）；電量/訊號巡檢模式隱藏車輛避免遮蔽色階 */}
+      {mode === 'status' && occupied && (
         <Car
           length={space.d * 0.9}
           width={space.w * 0.88}
