@@ -140,6 +140,8 @@ def _merge_spaces() -> list[dict]:
                 "battery_at": h.get("battery_at"),
                 "rssi": h.get("rssi"),
                 "rssi_at": h.get("rssi_at"),
+                "mac": h.get("mac"),
+                "remark": h.get("remark"),
             })
         out.append(merged)
     return out
@@ -177,6 +179,30 @@ async def export_xlsx():
     health = app.state.brickcom.health if app.state.brickcom else {}
     content = build_workbook(_merge_spaces(), health, "台北市第一停車場")
     fname = f"P1_parking_{datetime.now():%Y%m%d_%H%M%S}.xlsx"
+    return Response(
+        content=content,
+        media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        headers={"Content-Disposition": f'attachment; filename="{fname}"'},
+    )
+
+
+@app.get("/api/issues")
+async def get_issues():
+    from .issues import compute_issues
+
+    return compute_issues(_merge_spaces(), app.state.brickcom is not None)
+
+
+@app.get("/api/export/issues")
+async def export_issues():
+    from datetime import datetime
+
+    from .export_xlsx import build_issues_workbook
+    from .issues import compute_issues
+
+    report = compute_issues(_merge_spaces(), app.state.brickcom is not None)
+    content = build_issues_workbook(report, "台北市第一停車場")
+    fname = f"P1_issues_{datetime.now():%Y%m%d_%H%M%S}.xlsx"
     return Response(
         content=content,
         media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",

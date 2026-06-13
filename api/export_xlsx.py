@@ -173,3 +173,71 @@ def build_workbook(spaces: list[dict], health: dict[str, dict], site_name: str) 
     buf = io.BytesIO()
     wb.save(buf)
     return buf.getvalue()
+
+
+_ISSUE_FILL = {
+    "mac_mismatch": PatternFill("solid", fgColor="FFC7CE"),
+    "offline": PatternFill("solid", fgColor="D9D9D9"),
+    "low_battery": PatternFill("solid", fgColor="FFD8C9"),
+    "weak_signal": PatternFill("solid", fgColor="FFEB9C"),
+    "remark_flag": PatternFill("solid", fgColor="E2EFDA"),
+}
+_ISSUE_HEADERS = [
+    "車格", "分區", "主要問題", "問題類別", "Carin MAC", "Brickcom MAC",
+    "電量(%)", "RSSI(dBm)", "Brickcom 備註", "說明",
+]
+_ISSUE_WIDTHS = [9, 7, 16, 24, 14, 18, 9, 10, 26, 40]
+
+
+def build_issues_workbook(report: dict, site_name: str) -> bytes:
+    from .issues import ISSUE_META
+
+    wb = Workbook()
+
+    # ---- 摘要 ----
+    ws0 = wb.active
+    ws0.title = "異常摘要"
+    ws0.column_dimensions["A"].width = 18
+    ws0.column_dimensions["B"].width = 10
+    ws0.column_dimensions["C"].width = 44
+    ws0.append([f"{site_name} 設備異常報表"])
+    ws0.cell(row=1, column=1).font = Font(bold=True, size=14)
+    ws0.append(["產出時間", report["generated_at"]])
+    ws0.append(["異常車格總數", report["total_issues"]])
+    if not report["brickcom_enabled"]:
+        ws0.append(["備註", "未啟用 Brickcom，僅統計 Carin 可判斷之斷線類"])
+    ws0.append([])
+    ws0.append(["問題類別", "車格數", "處理建議"])
+    for c in ws0[ws0.max_row]:
+        c.font = Font(bold=True, color="FFFFFF")
+        c.fill = _FILL_HEADER
+    for cat in report["categories"]:
+        ws0.append([cat["label"], cat["count"], cat["hint"]])
+        ws0.cell(row=ws0.max_row, column=1).fill = _ISSUE_FILL.get(cat["key"], _FILL_GRAY)
+
+    # ---- 明細（依嚴重度排序）----
+    ws = wb.create_sheet("異常明細")
+    ws.append(_ISSUE_HEADERS)
+    for i, cell in enumerate(ws[1], start=1):
+        cell.font = Font(bold=True, color="FFFFFF")
+        cell.fill = _FILL_HEADER
+        cell.alignment = Alignment(horizontal="center")
+        ws.column_dimensions[get_column_letter(i)].width = _ISSUE_WIDTHS[i - 1]
+    ws.freeze_panes = "A2"
+
+    for it in report["items"]:
+        labels = "、".join(ISSUE_META[f]["label"] for f in it["flags"])
+        detail = "；".join(it["detail"].get(f, "") for f in it["flags"] if it["detail"].get(f))
+        ws.append([
+            it["name"], it.get("zone") or "",
+            ISSUE_META[it["primary"]]["label"], labels,
+            it.get("imei") or "", it.get("mac") or "",
+            it["battery"] if it["battery"] is not None else "—",
+            it["rssi"] if it["rssi"] is not None else "—",
+            it.get("remark") or "", detail,
+        ])
+        ws.cell(row=ws.max_row, column=3).fill = _ISSUE_FILL.get(it["primary"], _FILL_GRAY)
+
+    buf = io.BytesIO()
+    wb.save(buf)
+    return buf.getvalue()

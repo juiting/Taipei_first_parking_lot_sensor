@@ -51,7 +51,7 @@ function Stat({ label, value, color }: { label: string; value: number | string; 
   )
 }
 
-export function StatsBar() {
+export function StatsBar({ issueCount, onOpenIssues }: { issueCount: number; onOpenIssues: () => void }) {
   const summary = useStore((s) => s.summary)
   const connected = useStore((s) => s.connected)
   const fetchedAt = useStore((s) => s.fetchedAt)
@@ -75,6 +75,24 @@ export function StatsBar() {
       <Stat label="維護" value={c.Maintenance ?? 0} color={STATUS_COLOR.Maintenance} />
       <Stat label="離線" value={summary.offline} color={OFFLINE_COLOR} />
       <BatteryDistribution />
+      <button
+        onClick={onOpenIssues}
+        title="檢視現場設備異常（MAC 不符／斷線／低電量／訊號不佳）"
+        style={{
+          flexShrink: 0, padding: '6px 12px', fontSize: 13, cursor: 'pointer',
+          color: issueCount > 0 ? '#fff' : '#cbd5e1',
+          background: issueCount > 0 ? '#b91c1c' : 'rgba(15,23,42,0.85)',
+          border: `1px solid ${issueCount > 0 ? '#ef4444' : '#1e293b'}`,
+          borderRadius: 8, display: 'flex', alignItems: 'center', gap: 6,
+        }}
+      >
+        ⚠ 異常
+        <span style={{
+          background: issueCount > 0 ? '#fff' : '#334155',
+          color: issueCount > 0 ? '#b91c1c' : '#94a3b8',
+          borderRadius: 10, padding: '0 7px', fontSize: 12, fontWeight: 700, minWidth: 18, textAlign: 'center',
+        }}>{issueCount}</span>
+      </button>
       <div style={{ flex: 1 }} />
       <a
         href="/api/export/xlsx"
